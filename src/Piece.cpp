@@ -11,11 +11,13 @@ Piece::Piece() {
 	this->color = true;
 	this->value = 0;
 	this->name = "Piece";
+	this->possibleMoves = vector<string>();
 }
 //Constructor
 Piece::Piece(bool color, int value) {
 	this->color = color;
 	this->value = value;
+	this->possibleMoves = vector<string>();
 }
 //Getters
 bool Piece::GetColor() const{
@@ -27,6 +29,7 @@ int Piece::GetValue() const{
 string Piece::GetName() const {
 	return this->name;
 }
+
 //Setters
 void Piece::SetColor(bool color) {
 	this->color = color;
@@ -52,7 +55,12 @@ string Piece::HighlightToString() {
 	return str;
 }
 
-vector<string> Piece::GetPossibleMoves(Board* board, int file, int rank)
+void Piece::SetPossibleMoves(Board* board, int file, int rank)
 {
-    return vector<string>();
+	this->possibleMoves = vector<string>();
+}
+
+vector<string> Piece::GetPossibleMoves()
+{
+	return this->possibleMoves;
 }

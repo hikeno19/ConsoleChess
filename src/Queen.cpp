@@ -18,7 +18,7 @@ Queen::~Queen() {
 
 }
 
-vector<string> Queen::GetPossibleMoves(Board* board, int file, int rank)
+void Queen::SetPossibleMoves(Board* board, int file, int rank)
 {
 	return vector<string>();
 }

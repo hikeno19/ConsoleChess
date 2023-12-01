@@ -18,9 +18,7 @@ Rook::Rook(bool color){
 Rook::~Rook() {
 }
 
-vector<string> Rook::GetPossibleMoves(Board* board, int file, int rank)
+void Rook::SetPossibleMoves(Board* board, int file, int rank)
 {
-	Board* testBoard = board;
-	vector<string> moves;
-	return moves;
+
 }

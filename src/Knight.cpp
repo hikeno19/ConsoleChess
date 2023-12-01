@@ -19,10 +19,8 @@ Knight::~Knight() {
 
 }
 
-vector<string> Knight::GetPossibleMoves(Board* board, int file, int rank) {
-	vector<string> output;
-	Board* b = board;
-	return output;
+void Knight::SetPossibleMoves(Board* boardState, int file, int rank)
+{
 }
 
 string Knight::ToString()

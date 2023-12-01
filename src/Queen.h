@@ -14,7 +14,7 @@ public:
 	Queen(bool color);
 	//Destructor
 	~Queen();
-	vector<string> GetPossibleMoves(Board* board, int file, int rank) override;
+	void SetPossibleMoves(Board* board, int file, int rank) override;
 private:
 };
 

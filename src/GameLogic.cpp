@@ -27,6 +27,8 @@ void GameLogic::Initiate() {
     board->NewBoard();
     board->PrintBoard();
 	while (this->GameIsOn) {
+        this->testBoard->SetBoard(this->board);
+        this->board->SetPossibleMovesAllPieces(this->testBoard);
         vector<int> move = PromptMove();
         if (move.size() == 1) {
             cout << "Game Over!" << endl;
@@ -56,7 +58,6 @@ string GameLogic::GetOppositePlayer() {
 // Prompts User For Move
 vector<int> GameLogic::PromptMove() {
     cout << "Current Player: " << GetCurrentPlayer() << endl;
-    testBoard->SetBoard(this->board);
     if (board->CheckCheckmate(testBoard, currentSide)) {
         cout << "Checkmate!" << endl;
         return {};
@@ -71,6 +72,7 @@ vector<int> GameLogic::PromptMove() {
     int endfile = -1;
     int endrank = -1;
     vector<int> output;
+    vector<string> possibleMoves;
     while (entering) {
         cout << "Enter Piece Location:" << endl;;
         cin >> start;
@@ -78,7 +80,8 @@ vector<int> GameLogic::PromptMove() {
             entering = false;
             return { -1 };
         }
-        if (CheckValidStartEntry(start)) {
+        possibleMoves = CheckValidStartEntry(start);
+        if (!possibleMoves.empty()) {
             startrank = LetterToInteger(start.at(0));
             startfile = start.at(1) - '0' - 1;
             cout << this->board->GetPieceNameAt(startfile, startrank) << " At " << start << " Selected." << endl << endl;
@@ -98,21 +101,28 @@ vector<int> GameLogic::PromptMove() {
             entering = false;
             return { -1 };
         }
-        if (CheckValidEndEntry( testBoard, startfile, startrank, end)) {
-            endrank = LetterToInteger(end.at(0));
-            endfile = end.at(1) - '0' - 1;
-            output.push_back(endfile); 
-            output.push_back(endrank);
-            break;
+        if (!CheckValidEntry(end)) {
+            cout << "Invalid Move Entered. Try Again!" << endl;
+            continue;
         }
         else {
-            cout << "Invalid Move Entered. Try Again!" << endl;
+            endrank = LetterToInteger(end.at(0));
+            endfile = end.at(1) - '0' - 1;
+            string str = to_string(endfile) + to_string(endrank);
+            if (CheckValidEndEntry(possibleMoves, str)) {
+                output.push_back(endfile);
+                output.push_back(endrank);
+                break;  
+            }
+            else {
+                cout << "Invalid Move Entered. Try Again!" << endl;
+            }
         }
     }
+    this->board->HighlightPrintBoard(startfile, startrank);
     cout << "Moved " << this->board->GetPieceAt(startfile, startrank)->GetName() << " At " << start;
     cout << " To " << end << endl;
-    this->board->PrintBoard();
-    return { startfile, startrank, endfile, endrank };
+    return output;
 }
 
 bool GameLogic::CheckValidEntry(string entry) {
@@ -130,7 +140,7 @@ bool GameLogic::CheckValidEntry(string entry) {
 }
 
 // Checks If The User Entered Coordinate is Valid Start Point.
-bool GameLogic::CheckValidStartEntry(string start) {
+vector<string> GameLogic::CheckValidStartEntry(string start) {
     if (CheckValidEntry(start)) {
         int rank = LetterToInteger(start.at(0));
         int file = start.at(1) - '0' - 1;
@@ -139,26 +149,28 @@ bool GameLogic::CheckValidStartEntry(string start) {
             cout << "  Piece:  " << this->board->GetPieceAt(file, rank)->GetName() << endl;
         }
         else {
-            return false;
+            return {};
         }
         if (this->board->GetColorOfPosition(file, rank) == currentSide) {
             vector<string> possibleMoves = this->board->GetPossibleMovesAt( testBoard, file, rank);
             if (!possibleMoves.empty()) {
-                return true;
+                return possibleMoves;
             }
         }
     }
-    return false;
+    return {};
 }
 
 // Checks If the User Entered Coordinate is Valid End Point. 
-bool GameLogic::CheckValidEndEntry( Board* boardState, int file, int rank, string end) {
-    if (CheckValidEntry(end)) {
-        if (this->board->TestMove( boardState, rank, file, end.at(1) - '0' - 1, LetterToInteger(end.at(0)), this->currentSide)) {
+bool GameLogic::CheckValidEndEntry( vector<string> moves, string coord ) {
+        auto it = find(moves.begin(), moves.end(), coord);
+        cout << "Searching For Move: " << coord << endl;
+        if (it != moves.end()) {
+            cout << "Found Move!" << endl;
             return true;
         }
-    }
-    return false;
+        cout << "Failed to Find Move!" << endl;
+        return false;
 }
 
 // Convert Coordinate String to Integer Coordinates

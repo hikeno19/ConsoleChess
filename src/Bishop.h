@@ -15,7 +15,7 @@ class Bishop : public Piece
 		Bishop(bool color);
 		//Destructor
 		~Bishop();
-		vector<string> GetPossibleMoves(Board* board, int file, int rank) override;
+		void SetPossibleMoves(Board* board, int file, int rank) override;
 	private:
 };
 

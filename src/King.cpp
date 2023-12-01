@@ -18,8 +18,8 @@ King::~King() {
 
 }
 
-vector<string> King::GetPossibleMoves(Board* board, int file, int rank)
+void King::SetPossibleMoves(Board* board, int file, int rank)
 {
-	return vector<string>();
+
 }
 

@@ -13,8 +13,8 @@ class GameLogic
 		void Initiate();
 		vector<int> PromptMove();
 		bool CheckValidEntry(string entry);
-		bool CheckValidStartEntry( string start);
-		bool CheckValidEndEntry(Board* boardState, int file, int rank, string end);
+		vector<string> CheckValidStartEntry( string start);
+		bool CheckValidEndEntry(vector<string> moves, string coord);
 		int LetterToInteger(char ch);
 		string CoordinateIntegerToString(int file, int rank);
 		void PrintBoard();

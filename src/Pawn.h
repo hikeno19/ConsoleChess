@@ -14,8 +14,11 @@ class Pawn : public Piece
 		Pawn(bool color);
 		//Destructor
 		~Pawn();
-		vector<string> GetPossibleMoves(Board* board, int file, int rank) override;
+		bool GetMoved();
+		void SetMoved();
+		void SetPossibleMoves(Board* board, int file, int rank) override;
 	private:
+		bool moved;
 };
 
 #endif

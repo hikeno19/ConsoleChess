@@ -17,7 +17,7 @@ class Knight : public Piece
 		Knight(bool color);
 		//Destructor
 		~Knight();
-		vector<string> GetPossibleMoves(Board* board, int file, int rank) override;
+		void SetPossibleMoves(Board* boardState, int file, int rank);
 		string ToString() override;
 };
 

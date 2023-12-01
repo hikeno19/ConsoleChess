@@ -16,7 +16,6 @@ Bishop::~Bishop() {
 
 }
 
-vector<string> Bishop::GetPossibleMoves(Board* board, int file, int rank)
+void Bishop::SetPossibleMoves(Board* board, int file, int rank)
 {
-	return vector<string>();
 }

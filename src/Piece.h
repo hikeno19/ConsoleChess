@@ -27,7 +27,10 @@ class Piece
 		void SetName(string name);
 		virtual string ToString();
 		string HighlightToString();
-		virtual vector<string> GetPossibleMoves(Board* board, int file, int rank);
+		virtual void SetPossibleMoves(Board* board, int file, int rank);
+		virtual vector<string> GetPossibleMoves();
+
+		vector<string> possibleMoves;
 	private:
 		// variables 
 		bool color;

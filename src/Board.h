@@ -46,9 +46,11 @@ class Board
 
 		bool TestPawnMove(Board* boardState, int sfile, int srank, int efile, int erank, bool currentSide);
 
+		void SetPossibleMovesAllPieces(Board* board);
+
 		bool TestMove( Board* boardState, int sfile, int srank, int efile, int erank, bool currentSide);
 
-		vector<string> GetPossibleMovesAt(Board* boardState, int file, int rank);
+		vector<string> GetPossibleMovesAt( int file, int rank);
 
 		void PrintBoard();
 

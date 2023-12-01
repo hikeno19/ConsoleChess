@@ -1,2 +1,4 @@
-﻿  Pawn.cpp
+﻿  Board.cpp
+C:\Users\hiken\source\repos\ChessText\src\Board.cpp(171,35): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\hiken\source\repos\ChessText\src\Board.cpp(171,32): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   ChessText.vcxproj -> C:\Users\hiken\source\repos\ChessText\x64\Debug\ChessText.exe

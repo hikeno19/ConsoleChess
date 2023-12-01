@@ -20,6 +20,7 @@ Board::Board() {
     for (int i = 0; i < 8; ++i) {
         board[i].resize(8, nullptr);
     }
+    this->previousBoard = nullptr;
 }
 
 // destructor
@@ -152,6 +153,9 @@ bool Board::MakeMove(vector<int> move)
 {
     this->previousBoard = clone();
     delete this->board[move[2]][move[3]];
+    if (this->board[move[0]][move[1]]->GetName() == "Pawn" && !dynamic_cast<Pawn*>(this->board[move[0]][move[1]])->GetMoved()) {
+        dynamic_cast<Pawn*>(this->board[move[0]][move[1]])->SetMoved();
+    }
     this->board[move[2]][move[3]] = this->board[move[0]][move[1]];
     this->board[move[0]][move[1]] = nullptr;
     PrintBoard();
@@ -165,7 +169,7 @@ vector<string> Board::GetEnemyPossibleMoves(Board* b, bool currentSide){
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
                 if (isOccupied(i, j) && GetColorOfPosition(static_cast<int>(i), static_cast<int>(j)) != currentSide) {
-                    vector<string> moves = GetPossibleMovesAt(b, static_cast<int>(i), static_cast<int>(j));
+                    vector<string> moves = GetPossibleMovesAt( static_cast<int>(i), static_cast<int>(j));
                     output.insert(output.end(), moves.begin(), moves.end());
                 }
         }
@@ -197,16 +201,16 @@ bool Board::isOccupied(int file, int rank) {
 
 // Checks the color of the piece on position.
 bool Board::GetColorOfPosition(int file, int rank) {
-    cout << "Checking Color of Position at file:" << file << "  rank:" << rank << endl;
+    std::cout << "Checking Color of Position at file:" << file << "  rank:" << rank << endl;
     Piece* test = nullptr;
     if (this->board[file][rank] == nullptr) {
-        cout << "Null" << endl;
+        std::cout << "Null" << endl;
     }
     else {
         test = this->board[file][rank];
     }
     bool color = this->board[file][rank]->GetColor();
-    cout << "Color Of Position: " << color << endl;
+    std::cout << "Color Of Position: " << color << endl;
     return color;
 }
 
@@ -267,59 +271,71 @@ bool Board::TestPawnMove(Board* boardState, int sfile, int srank, int efile, int
 }
 
 
+// Sets all piece Possible Moves
+void Board::SetPossibleMovesAllPieces(Board* boardState) {
+    for (int i = 0; i < this->board.size(); i++) {
+        for (int j = 0; j < this->board.size(); j++) {
+            if (isOccupied(i, j)) {
+                this->board[i][j]->SetPossibleMoves(boardState, i, j);
+            }
+        }
+    }
+}
+
+
 // GetPossibleMovesAt(file, rank)
-vector<string> Board::GetPossibleMovesAt( Board* boardState, int file, int rank) {
-    return this->board[file][rank]->GetPossibleMoves(boardState, file, rank);
+vector<string> Board::GetPossibleMovesAt( int file, int rank) {
+    return this->board[file][rank]->GetPossibleMoves();
 }
 
 // Print Board
 void Board::PrintBoard() {
-    cout << "Board:" << endl;
+    std::cout << "Board:" << endl;
     for (int i = 7; i >= 0; i--) {
-        cout << i + 1 << " ";
+        std::cout << i + 1 << " ";
         for (int j = 0; j < 8; j++) {
             if (this->board[i][j] != nullptr) {
-                cout << this->board[i][j]->ToString() << " ";
+                std::cout << this->board[i][j]->ToString() << " ";
             }
             else {
-                cout << "[ ]" << " ";
+                std::cout << "[ ]" << " ";
             }
         }
-        cout << endl;
+        std::cout << endl;
     }
-    cout << "  ";
+    std::cout << "  ";
     for (char ch = 'A'; ch <= 'H'; ++ch) {
-        cout << " " << ch << ' ' << " ";
+        std::cout << " " << ch << ' ' << " ";
     }
-    cout << endl;
+    std::cout << endl;
 }
 
 // Print Board with Highlighted Piece
 void Board::HighlightPrintBoard(int file, int rank) {
-    cout << this->board[file][rank]->GetName() << " " << "Selected" << endl;
-    cout << "Board:" << endl;
+    std::cout << this->board[file][rank]->GetName() << " " << "Selected" << endl;
+    std::cout << "Board:" << endl;
     for (int i = 7; i >= 0; i--) {
-        cout << i + 1 << " ";
+        std::cout << i + 1 << " ";
         for (int j = 0; j < 8; j++) {
             if (this->board[i][j] != nullptr) {
                 if (i == file && j == rank) {
-                    cout << "\033[0m" << this->board[i][j]->HighlightToString() << "\033[0m ";
+                    std::cout << "\033[0m" << this->board[i][j]->HighlightToString() << "\033[0m ";
                 }
                 else {
-                    cout << "\033[0m" << this->board[i][j]->ToString() << "\033[0m ";
+                    std::cout << "\033[0m" << this->board[i][j]->ToString() << "\033[0m ";
                 }
             }
             else {
-                cout << "[ ]" << " ";
+                std::cout << "[ ]" << " ";
             }
         }
-        cout << endl;
+        std::cout << endl;
     }
-    cout << "  ";
+    std::cout << "  ";
     for (char ch = 'A'; ch <= 'H'; ++ch) {
-        cout << " " << ch << ' ' << " ";
+        std::cout << " " << ch << ' ' << " ";
     }
-    cout << endl;
+    std::cout << endl;
 }
 
 void Board::undoMove() {
