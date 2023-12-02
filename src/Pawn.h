@@ -17,6 +17,8 @@ class Pawn : public Piece
 		bool GetMoved();
 		void SetMoved();
 		void SetPossibleMoves(Board* board, int file, int rank) override;
+
+		Pawn* clone() const override;
 	private:
 		bool moved;
 };

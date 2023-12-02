@@ -11,13 +11,14 @@ class GameLogic
 		~GameLogic();
 
 		void Initiate();
-		vector<int> PromptMove();
+		void PromptMove();
 		bool CheckValidEntry(string entry);
 		vector<string> CheckValidStartEntry( string start);
 		bool CheckValidEndEntry(vector<string> moves, string coord);
 		int LetterToInteger(char ch);
 		string CoordinateIntegerToString(int file, int rank);
 		void PrintBoard();
+		void HighlightPrintBoard(int file, int rank);
 		string GetCurrentPlayer();
 		string GetOppositePlayer();
 

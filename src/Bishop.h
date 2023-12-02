@@ -16,6 +16,7 @@ class Bishop : public Piece
 		//Destructor
 		~Bishop();
 		void SetPossibleMoves(Board* board, int file, int rank) override;
+		Bishop* clone() const override;
 	private:
 };
 

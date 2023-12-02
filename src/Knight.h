@@ -18,7 +18,7 @@ class Knight : public Piece
 		//Destructor
 		~Knight();
 		void SetPossibleMoves(Board* boardState, int file, int rank);
-		string ToString() override;
+		Knight* clone() const override;
 };
 
 #endif

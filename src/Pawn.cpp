@@ -8,15 +8,17 @@
 Pawn::Pawn() {
 	this->SetColor(true);
 	this->SetValue(1);
-	this->SetName("Pawn");
+	this->SetType(PieceType::P);
 	this->moved = false;
+	this->possibleMoves = vector<string>();
 }
 // Constructor
 Pawn::Pawn(bool color) {
 	this->SetColor(color);
 	this->SetValue(1);
-	this->SetName("Pawn");
+	this->SetType(PieceType::P);
 	this->moved = false;
+	this->possibleMoves = vector<string>();
 }
 // Destructor
 Pawn::~Pawn() {
@@ -33,28 +35,31 @@ void Pawn::SetMoved()
 }
 
 void Pawn::SetPossibleMoves(Board* board, int file, int rank) {
-	Board* b = board;
+	this->possibleMoves.clear();
 	int increment = this->GetColor() ? 1 : -1;
-	if (b->inRange(file + increment)) {
-		if (!b->isOccupied(file + increment, rank)) {
-			possibleMoves.push_back(to_string(file + increment) + to_string(rank));
+	int targetFile = file + increment;
+
+	if (board->inRange(targetFile)) {
+		if (!board->isOccupied(targetFile, rank)) {
+			possibleMoves.push_back(to_string(targetFile) + to_string(rank));
 		}
-		if (b->inRange(rank+1) && b->isOccupied(file + increment, rank+1) && b->GetColorOfPosition(file+increment, rank+1) != this->GetColor()) {
-			if (b->TestPawnMove(b, file, rank, file + increment, rank, this->GetColor())) {
-				possibleMoves.push_back(to_string(file + increment) + to_string(rank - 1));
+
+		auto checkAndAddMove = [&](int targetRank) {
+			if (board->inRange(targetRank) && board->isOccupied(targetFile, targetRank) && board->GetColorOfPosition(targetFile, targetRank) != this->GetColor()) {
+				if (board->TestPawnMove(board, file, rank, targetFile, targetRank, this->GetColor())) {
+					possibleMoves.push_back(to_string(targetFile) + to_string(targetRank));
+				}
 			}
-		}
-		if (b->inRange(rank-1) && b->isOccupied(file + increment, rank-1) && b->GetColorOfPosition(file + increment, rank-1) != this->GetColor()) {
-			if (b->TestPawnMove(b, file, rank, file + increment, rank + 1, this->GetColor())) {
-				possibleMoves.push_back(to_string(file + increment) + to_string(rank-1));
-			}
-		}
+			};
+
+		checkAndAddMove(rank + 1);
+		checkAndAddMove(rank - 1);
 	}
+
 	if (!this->GetMoved()) {
-		if (b->inRange(file + (increment * 2))) {
-			if (!b->isOccupied(file + (increment * 2), rank)) {
-				possibleMoves.push_back(to_string(file + (increment * 2)) + to_string(rank));
-			}
+		int doubleMoveFile = file + (increment * 2);
+		if (board->inRange(doubleMoveFile) && !board->isOccupied(doubleMoveFile, rank)) {
+			possibleMoves.push_back(to_string(doubleMoveFile) + to_string(rank));
 		}
 	}
 	cout << GetName() << " On File: " << file << "  Rank: " << rank << "  Possible Moves:" << endl;
@@ -64,4 +69,9 @@ void Pawn::SetPossibleMoves(Board* board, int file, int rank) {
 		}
 	}
 	cout << " End of Possible Moves." << endl << endl;
+}
+
+Pawn* Pawn::clone() const {
+	// Create a new instance of the derived class (Pawn)
+	return new Pawn(*this);
 }

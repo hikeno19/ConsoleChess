@@ -7,12 +7,14 @@
 Knight::Knight() {
 	this->SetColor(true);
 	this->SetValue(3);
-	this->SetName("Knight");
+	this->SetType(PieceType::N);
+	this->possibleMoves = vector<string>();
 }
 Knight::Knight(bool color) {
 	this->SetColor(color);
 	this->SetValue(3);
-	this->SetName("Knight");
+	this->SetType(PieceType::N);
+	this->possibleMoves = vector<string>();
 }
 //Destructor
 Knight::~Knight() {
@@ -23,12 +25,7 @@ void Knight::SetPossibleMoves(Board* boardState, int file, int rank)
 {
 }
 
-string Knight::ToString()
+Knight* Knight::clone() const
 {
-		string str = "[";
-		str += (this->GetColor()) ? "\033[37m" : "\033[31m";
-		str += "H";
-		str += "\033[0m";
-		str += "]";
-		return str;
+	return new Knight(*this);
 }

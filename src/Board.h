@@ -26,15 +26,12 @@ class Board
 		void SetKingPositions(string whiteKing, string blackKing);
 		string GetKingPosition(bool color) const;
 		vector<string> GetKingPossibleMoves(bool color);
-		vector<string> GetPiecePossibleMoves(string position);
-		bool CheckCheckmate(Board* boardState, bool currentSide);
-		bool CheckCheck(Board* boardState, bool currentSide);
+		bool CheckCheckmate( bool currentSide);
+		bool CheckCheck( bool currentSide);
 		bool MakeMove(vector<int> move);
 		vector<string> GetEnemyPossibleMoves(Board* b, bool currentSide);
 
 		Piece* GetPieceAt(int file, int rank);
-
-		string GetPieceNameAt(int file, int rank) const;
 
 		bool isOccupied(int file, int rank);
 
@@ -52,10 +49,6 @@ class Board
 
 		vector<string> GetPossibleMovesAt( int file, int rank);
 
-		void PrintBoard();
-
-		void HighlightPrintBoard(int file, int rank);
-
 		void undoMove();
 
 		Board* clone() const;
@@ -63,6 +56,7 @@ class Board
 	private:
 		Board* previousBoard;
 		vector<vector<Piece*>> board;
+		vector<string> enemyPossibleMoves;
 		string blackKingPosition;
 		string whiteKingPosition;
 

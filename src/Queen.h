@@ -15,6 +15,7 @@ public:
 	//Destructor
 	~Queen();
 	void SetPossibleMoves(Board* board, int file, int rank) override;
+	Queen* clone() const override;
 private:
 };
 

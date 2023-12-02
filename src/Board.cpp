@@ -29,7 +29,6 @@ Board::~Board() {
 
 void Board::NewBoard() {
     // Create a new board
-    this->board.resize(8);
     for (int i = 0; i < 8; ++i) {
         board[i].resize(8, nullptr);
     }
@@ -104,25 +103,22 @@ void Board::SetKingPositions(string whiteKing, string blackKing)
     this->blackKingPosition = blackKing;
     this->whiteKingPosition = whiteKing;
 }
+
 // Get's King's position.
 string Board::GetKingPosition(bool color) const
-{
+{ 
     return color ? whiteKingPosition : blackKingPosition;
 }
 
 // Get King's Possible Moves 
 vector<string> Board::GetKingPossibleMoves(bool color) {
-    return GetPiecePossibleMoves(GetKingPosition(color));
-}
-
-vector<string> Board::GetPiecePossibleMoves(string position)
-{
-    return vector<string>();
+    string pos = GetKingPosition(color);
+    return GetPossibleMovesAt(pos.at(0) - '0', pos.at(1) - '0');
 }
 
 // Checks for checkmate
-bool Board::CheckCheckmate(Board* boardState, bool currentSide){
-    if (CheckCheck(boardState, currentSide)) {
+bool Board::CheckCheckmate( bool currentSide){
+    if (CheckCheck( currentSide)) {
         if (GetKingPossibleMoves(currentSide).empty()) {
             return true;
         }
@@ -131,18 +127,10 @@ bool Board::CheckCheckmate(Board* boardState, bool currentSide){
 }
 
 // Checks if the current player is in check. 
-bool Board::CheckCheck(Board* boardState, bool currentSide){
-    for (size_t i = 0; i < 8; ++i) {
-        for (size_t j = 0; j < 8; ++j) {
-            if (this->board[i][j] != nullptr && this->board[i][j]->GetColor() != currentSide) {
-                vector<string> moves = GetPossibleMovesAt(boardState, static_cast<int>(i), static_cast<int>(j));
-                auto it = find(moves.begin(), moves.end(), GetKingPosition(currentSide));
-
-                if (it != moves.end()) {
-                    return true;  // The king is in check
-                }
-            }
-        }
+bool Board::CheckCheck( bool currentSide){
+    auto it = find(this->enemyPossibleMoves.begin(), this->enemyPossibleMoves.end(), GetKingPosition(currentSide));
+    if (it != this->enemyPossibleMoves.end()) {
+        return true;  // The king is in check
     }
 
     return false;  // The king is not in check after checking all pieces
@@ -152,20 +140,35 @@ bool Board::CheckCheck(Board* boardState, bool currentSide){
 bool Board::MakeMove(vector<int> move)
 {
     this->previousBoard = clone();
-    delete this->board[move[2]][move[3]];
-    if (this->board[move[0]][move[1]]->GetName() == "Pawn" && !dynamic_cast<Pawn*>(this->board[move[0]][move[1]])->GetMoved()) {
-        dynamic_cast<Pawn*>(this->board[move[0]][move[1]])->SetMoved();
+    Piece* sourcePiece = this->board[move[0]][move[1]];
+    Piece* targetPiece = this->board[move[2]][move[3]];
+    PieceType type = sourcePiece->GetType();
+    if (type == PieceType::P && !dynamic_cast<Pawn*>(sourcePiece)->GetMoved()) {
+        dynamic_cast<Pawn*>(sourcePiece)->SetMoved();
     }
-    this->board[move[2]][move[3]] = this->board[move[0]][move[1]];
+    else if (type == PieceType::K) {
+        if (sourcePiece->GetColor()) {
+            whiteKingPosition = to_string(move[2]) + to_string(move[3]);
+        }
+        else {
+            blackKingPosition = to_string(move[2]) + to_string(move[3]);
+        }
+    }
+
+    if (targetPiece != nullptr) {
+        delete this->board[move[2]][move[3]];
+    }
+
+    this->board[move[2]][move[3]] = sourcePiece;
     this->board[move[0]][move[1]] = nullptr;
-    PrintBoard();
-    return true;
+
+    return true;;
 }
 
 // Returns all moves that enemy pieces can move to. Enemy based on currentSide boolean. 
 vector<string> Board::GetEnemyPossibleMoves(Board* b, bool currentSide){
     vector<string> output;
-    size_t i, j;
+    int i, j;
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
                 if (isOccupied(i, j) && GetColorOfPosition(static_cast<int>(i), static_cast<int>(j)) != currentSide) {
@@ -183,25 +186,14 @@ Piece* Board::GetPieceAt(int file, int rank)
     return this->board[file][rank];
 }
 
-string Board::GetPieceNameAt(int file, int rank) const
-{
-    this->board[file][rank]->GetName();
-    return this->board[file][rank]->GetName();
-}
-
 // Checks if position is occupied, null or not.
 bool Board::isOccupied(int file, int rank) {
-    if (this->board[file][rank] != nullptr) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return this->board[file][rank] != nullptr;
 }
 
 // Checks the color of the piece on position.
 bool Board::GetColorOfPosition(int file, int rank) {
-    std::cout << "Checking Color of Position at file:" << file << "  rank:" << rank << endl;
+    //std::cout << "Checking Color of Position at file:" << file << "  rank:" << rank << endl;
     Piece* test = nullptr;
     if (this->board[file][rank] == nullptr) {
         std::cout << "Null" << endl;
@@ -210,7 +202,7 @@ bool Board::GetColorOfPosition(int file, int rank) {
         test = this->board[file][rank];
     }
     bool color = this->board[file][rank]->GetColor();
-    std::cout << "Color Of Position: " << color << endl;
+    //std::cout << "Color Of Position: " << color << endl;
     return color;
 }
 
@@ -234,7 +226,7 @@ bool Board::inRangeCoordinates(int x, int y) {
 bool Board::TestMove(Board* boardState, int sfile, int srank, int efile, int erank, bool currentSide) {
        if (!isOccupied(efile, erank)) {
             boardState->MakeMove({ sfile, srank, efile, erank });
-            if (!boardState->CheckCheck(boardState, currentSide)) {
+            if (!boardState->CheckCheck( currentSide)) {
                 boardState->undoMove();
                 return true;
             }
@@ -243,7 +235,7 @@ bool Board::TestMove(Board* boardState, int sfile, int srank, int efile, int era
             }
         } else if (this->GetColorOfPosition(efile, erank) != currentSide) {
            boardState->MakeMove({ sfile, srank, efile, erank });
-           if (!boardState->CheckCheck(boardState, currentSide)) {
+           if (!boardState->CheckCheck( currentSide)) {
                boardState->undoMove();
                return true;
            }
@@ -258,7 +250,7 @@ bool Board::TestMove(Board* boardState, int sfile, int srank, int efile, int era
 bool Board::TestPawnMove(Board* boardState, int sfile, int srank, int efile, int erank, bool currentSide) {
     if (isOccupied(efile, erank) && GetColorOfPosition(efile, erank) != currentSide) {
         boardState->MakeMove({ sfile, srank, efile, erank });
-        if (!boardState->CheckCheck(boardState, currentSide)) {
+        if (!boardState->CheckCheck( currentSide)) {
             boardState->undoMove();
             return true;
         }
@@ -275,7 +267,7 @@ bool Board::TestPawnMove(Board* boardState, int sfile, int srank, int efile, int
 void Board::SetPossibleMovesAllPieces(Board* boardState) {
     for (int i = 0; i < this->board.size(); i++) {
         for (int j = 0; j < this->board.size(); j++) {
-            if (isOccupied(i, j)) {
+            if (isOccupied(i, j) && this->board[i][j] != nullptr) {
                 this->board[i][j]->SetPossibleMoves(boardState, i, j);
             }
         }
@@ -288,65 +280,31 @@ vector<string> Board::GetPossibleMovesAt( int file, int rank) {
     return this->board[file][rank]->GetPossibleMoves();
 }
 
-// Print Board
-void Board::PrintBoard() {
-    std::cout << "Board:" << endl;
-    for (int i = 7; i >= 0; i--) {
-        std::cout << i + 1 << " ";
-        for (int j = 0; j < 8; j++) {
-            if (this->board[i][j] != nullptr) {
-                std::cout << this->board[i][j]->ToString() << " ";
-            }
-            else {
-                std::cout << "[ ]" << " ";
-            }
-        }
-        std::cout << endl;
-    }
-    std::cout << "  ";
-    for (char ch = 'A'; ch <= 'H'; ++ch) {
-        std::cout << " " << ch << ' ' << " ";
-    }
-    std::cout << endl;
-}
-
-// Print Board with Highlighted Piece
-void Board::HighlightPrintBoard(int file, int rank) {
-    std::cout << this->board[file][rank]->GetName() << " " << "Selected" << endl;
-    std::cout << "Board:" << endl;
-    for (int i = 7; i >= 0; i--) {
-        std::cout << i + 1 << " ";
-        for (int j = 0; j < 8; j++) {
-            if (this->board[i][j] != nullptr) {
-                if (i == file && j == rank) {
-                    std::cout << "\033[0m" << this->board[i][j]->HighlightToString() << "\033[0m ";
-                }
-                else {
-                    std::cout << "\033[0m" << this->board[i][j]->ToString() << "\033[0m ";
-                }
-            }
-            else {
-                std::cout << "[ ]" << " ";
-            }
-        }
-        std::cout << endl;
-    }
-    std::cout << "  ";
-    for (char ch = 'A'; ch <= 'H'; ++ch) {
-        std::cout << " " << ch << ' ' << " ";
-    }
-    std::cout << endl;
-}
-
 void Board::undoMove() {
     SetBoard(this->previousBoard);
 }
 
 // Clone Function
 Board* Board::clone() const{
-    Board* clonedObject = new Board();
-    clonedObject->SetBoard(GetBoard());
-    clonedObject->SetKingPositions(this->whiteKingPosition, this->blackKingPosition);
-    clonedObject->SetPreviousBoard(this->previousBoard);
-    return clonedObject;
+    Board* clonedBoard = new Board();
+    
+    // Set King Positions
+    clonedBoard->SetKingPositions(this->whiteKingPosition, this->blackKingPosition);
+
+    // Clone and Copy Pieces Onto Clone Board
+    for (int file = 0; file < 8; ++file) {
+        for (int rank = 0; rank < 8; ++rank) {
+            if (this->board[file][rank] != nullptr) {
+                // Clone the piece and add it to the cloned board
+                Piece* clonedPiece = this->board[file][rank]->clone();
+                clonedBoard->GetBoard()[file][rank] = clonedPiece;
+            }
+        }
+    }
+
+    // Set the previous board of the cloned board
+    if (this->previousBoard != nullptr) {
+        clonedBoard->SetPreviousBoard(this->previousBoard->clone());
+    }
+    return clonedBoard;
 }

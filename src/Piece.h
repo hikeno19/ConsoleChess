@@ -9,6 +9,16 @@ using namespace std;
 
 class Board;
 
+enum PieceType {
+	B = 'B',
+	K = 'K',
+	N = 'N',
+	P = 'P',
+	Q = 'Q',
+	R = 'R',
+	E = '#'
+};
+
 class Piece
 {
 	public:
@@ -20,22 +30,25 @@ class Piece
 		//Getters
 		bool GetColor() const;
 		int GetValue() const;
+		PieceType GetType() const;
 		string GetName() const;
 		//Setters
 		void SetColor(bool color);
 		void SetValue(int value);
-		void SetName(string name);
+		void SetType(PieceType type);
 		virtual string ToString();
 		string HighlightToString();
 		virtual void SetPossibleMoves(Board* board, int file, int rank);
 		virtual vector<string> GetPossibleMoves();
+
+		virtual Piece* clone() const;
 
 		vector<string> possibleMoves;
 	private:
 		// variables 
 		bool color;
 		int value;
-		string name;
+		PieceType type;
 };
 
 #endif
