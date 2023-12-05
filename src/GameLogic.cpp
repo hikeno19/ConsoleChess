@@ -24,11 +24,11 @@ GameLogic::~GameLogic() {
 // Initiate New Game. Where while loop will lie. 
 void GameLogic::Initiate() {
 	this->GameIsOn = true;
-    board->NewBoard();
+    this->board->NewBoard();
 	while (this->GameIsOn) {
-        this->testBoard->SetBoard(this->board->clone());
-        this->board->SetPossibleMovesAllPieces(this->testBoard);
-        PrintBoard();
+        testBoard->SetBoard(this->board->clone());
+        this->board->SetPossibleMovesAllPieces(testBoard);
+        this->board->PrintBoard();
         PromptMove();
 	}
 }
@@ -45,12 +45,12 @@ string GameLogic::GetOppositePlayer() {
 // Prompts User For Move
 void GameLogic::PromptMove() {
     cout << "Current Player: " << GetCurrentPlayer() << endl;
-    if (board->CheckCheckmate( currentSide)) {
+    if (board->CheckCheckmate( testBoard, currentSide)) {
         cout << "Checkmate! " << GetOppositePlayer() << " Wins!" << endl;
         this->GameIsOn = false;
         return;
     }
-    if (board->CheckCheck( currentSide)) {
+    if (board->CheckCheck( testBoard, currentSide)) {
         cout << "In Check!" << endl;
     }
     string start, end;
@@ -74,7 +74,7 @@ void GameLogic::PromptMove() {
             startrank = LetterToInteger(start.at(0));
             startfile = start.at(1) - '0' - 1;
             cout << this->board->GetBoard()[startfile][startrank]->GetName() << " At " << start << " Selected." << endl << endl;
-            HighlightPrintBoard(startfile, startrank);
+            this->board->HighlightPrintBoard(startfile, startrank);
             output.push_back(startfile);
             output.push_back(startrank);
             break;
@@ -99,12 +99,12 @@ void GameLogic::PromptMove() {
             endrank = LetterToInteger(end.at(0));
             endfile = end.at(1) - '0' - 1;
             string str = to_string(endfile) + to_string(endrank);
-            if (CheckValidEndEntry(possibleMoves, str)) {
+            if (CheckValidEndEntry(possibleMoves, str) && this->board->TestMove(testBoard, startfile, startrank, endfile, endrank, currentSide)) {
                 output.push_back(endfile);
                 output.push_back(endrank);
                 if (this->board->isOccupied(endfile, endrank)) {
                     cout << GetCurrentPlayer() << " " << this->board->GetPieceAt(output[0], output[1])->GetName() << " On " << start << " Takes ";
-                    cout << GetOppositePlayer() << " " << this->board->GetPieceAt(output[2], output[3])->GetName() << " On " << end;
+                    cout << GetOppositePlayer() << " " << this->board->GetPieceAt(output[2], output[3])->GetName() << " On " << end << endl << endl;
                 }
                 else {
                     cout << GetCurrentPlayer() << " " << this->board->GetPieceAt(startfile, startrank)->GetName() << " At " << start;
@@ -129,7 +129,7 @@ bool GameLogic::CheckValidEntry(string entry) {
     }
     else if (isalpha(entry.at(0)) != 0 && isdigit(entry.at(1))) {
         if ((entry.at(0) >= 'A' && entry.at(0) <= 'H') || (entry.at(0) >= 'a' && entry.at(0) <= 'h')) {
-            if (entry.at(1)-'0' >= 1 && entry.at(1)-'0' <= 7) {
+            if (entry.at(1)-'0' >= 1 && entry.at(1)-'0' <= 8) {
                 return true;
             }
         }
@@ -145,15 +145,15 @@ vector<string> GameLogic::CheckValidStartEntry(string start) {
         // cout << "Checking file: " << file << "   rank: " << rank << endl;
         if (this->board->isOccupied(file, rank)) {
             // cout << "  Piece:  " << this->board->GetPieceAt(file, rank)->GetName() << endl;
+            if (this->board->GetColorOfPosition(file, rank) == currentSide) {
+                vector<string> possibleMoves = this->board->GetPossibleMovesAt(file, rank);
+                if (!possibleMoves.empty()) {
+                    return possibleMoves;
+                }
+            }
         }
         else {
             return {};
-        }
-        if (this->board->GetColorOfPosition(file, rank) == currentSide) {
-            vector<string> possibleMoves = this->board->GetPossibleMovesAt( file, rank);
-            if (!possibleMoves.empty()) {
-                return possibleMoves;
-            }
         }
     }
     return {};
@@ -182,53 +182,3 @@ string GameLogic::CoordinateIntegerToString(int file, int rank) {
     return to_string(file) + to_string(rank);
 }
 
-// Print Board
-void GameLogic::PrintBoard() {
-    std::cout << "Board:" << endl;
-    for (int i = 7; i >= 0; i--) {
-        std::cout << i + 1 << " ";
-        for (int j = 0; j < 8; j++) {
-            Piece* piece = this->board->GetBoard()[i][j];
-            if (piece != nullptr) {
-                std::cout << piece->ToString() << " ";
-            }
-            else {
-                std::cout << "[ ]" << " ";
-            }
-        }
-        std::cout << endl;
-    }
-    std::cout << "  ";
-    for (char ch = 'A'; ch <= 'H'; ++ch) {
-        std::cout << " " << ch << ' ' << " ";
-    }
-    std::cout << endl;
-}
-
-// Print Board with Highlighted Piece
-void GameLogic::HighlightPrintBoard(int file, int rank) {
-    std::cout << "Board:" << endl;
-    for (int i = 7; i >= 0; i--) {
-        std::cout << i + 1 << " ";
-        for (int j = 0; j < 8; j++) {
-            Piece* piece = this->board->GetBoard()[i][j];
-            if (piece != nullptr) {
-                if (i == file && j == rank) {
-                    std::cout << "\033[0m" << piece->HighlightToString() << "\033[0m ";
-                }
-                else {
-                    std::cout << "\033[0m" << piece->ToString() << "\033[0m ";
-                }
-            }
-            else {
-                std::cout << "[ ]" << " ";
-            }
-        }
-        std::cout << endl;
-    }
-    std::cout << "  ";
-    for (char ch = 'A'; ch <= 'H'; ++ch) {
-        std::cout << " " << ch << ' ' << " ";
-    }
-    std::cout << endl;
-}

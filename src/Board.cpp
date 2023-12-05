@@ -28,11 +28,6 @@ Board::~Board() {
 }
 
 void Board::NewBoard() {
-    // Create a new board
-    for (int i = 0; i < 8; ++i) {
-        board[i].resize(8, nullptr);
-    }
-
     // Initializes White Pieces onto Board
     this->board[0][0] = new Rook(true);
     this->board[0][1] = new Knight(true);
@@ -117,8 +112,8 @@ vector<string> Board::GetKingPossibleMoves(bool color) {
 }
 
 // Checks for checkmate
-bool Board::CheckCheckmate( bool currentSide){
-    if (CheckCheck( currentSide)) {
+bool Board::CheckCheckmate( Board* boardState, bool currentSide){
+    if (CheckCheck(boardState, currentSide)) {
         if (GetKingPossibleMoves(currentSide).empty()) {
             return true;
         }
@@ -127,7 +122,9 @@ bool Board::CheckCheckmate( bool currentSide){
 }
 
 // Checks if the current player is in check. 
-bool Board::CheckCheck( bool currentSide){
+bool Board::CheckCheck(Board* boardState, bool currentSide){
+    this->enemyPossibleMoves.clear();
+    this->enemyPossibleMoves = GetEnemyPossibleMoves(boardState, currentSide);
     auto it = find(this->enemyPossibleMoves.begin(), this->enemyPossibleMoves.end(), GetKingPosition(currentSide));
     if (it != this->enemyPossibleMoves.end()) {
         return true;  // The king is in check
@@ -188,7 +185,14 @@ Piece* Board::GetPieceAt(int file, int rank)
 
 // Checks if position is occupied, null or not.
 bool Board::isOccupied(int file, int rank) {
-    return this->board[file][rank] != nullptr;
+    Piece* piece = this->board[file][rank];
+    if (piece != nullptr) {
+        return true;
+    }
+    else {
+        return false;
+    }
+
 }
 
 // Checks the color of the piece on position.
@@ -224,51 +228,24 @@ bool Board::inRangeCoordinates(int x, int y) {
 
 // Tests Move. 
 bool Board::TestMove(Board* boardState, int sfile, int srank, int efile, int erank, bool currentSide) {
-       if (!isOccupied(efile, erank)) {
-            boardState->MakeMove({ sfile, srank, efile, erank });
-            if (!boardState->CheckCheck( currentSide)) {
-                boardState->undoMove();
-                return true;
-            }
-            else {
-                boardState->undoMove();
-            }
-        } else if (this->GetColorOfPosition(efile, erank) != currentSide) {
-           boardState->MakeMove({ sfile, srank, efile, erank });
-           if (!boardState->CheckCheck( currentSide)) {
-               boardState->undoMove();
-               return true;
-           }
-           else {
-               boardState->undoMove();
-           }
-       }
-    return false;
-}
-
-// Tests Move. 
-bool Board::TestPawnMove(Board* boardState, int sfile, int srank, int efile, int erank, bool currentSide) {
-    if (isOccupied(efile, erank) && GetColorOfPosition(efile, erank) != currentSide) {
-        boardState->MakeMove({ sfile, srank, efile, erank });
-        if (!boardState->CheckCheck( currentSide)) {
-            boardState->undoMove();
-            return true;
-        }
-        else {
-            boardState->undoMove();
-            return false;
-        }
+    boardState->MakeMove({ sfile, srank, efile, erank });
+    if (!boardState->CheckCheck(boardState, currentSide)) {
+        boardState->undoMove();
+        return true;
+    }
+    else {
+        boardState->undoMove();
     }
     return false;
 }
-
 
 // Sets all piece Possible Moves
 void Board::SetPossibleMovesAllPieces(Board* boardState) {
     for (int i = 0; i < this->board.size(); i++) {
         for (int j = 0; j < this->board.size(); j++) {
-            if (isOccupied(i, j) && this->board[i][j] != nullptr) {
-                this->board[i][j]->SetPossibleMoves(boardState, i, j);
+            Piece* piece = this->board[i][j];
+            if (isOccupied(i, j) && piece != nullptr) {
+                piece->SetPossibleMoves(boardState, i, j);
             }
         }
     }
@@ -284,6 +261,57 @@ void Board::undoMove() {
     SetBoard(this->previousBoard);
 }
 
+// Print Board
+void Board::PrintBoard() {
+    std::cout << "Board:" << endl;
+    for (int i = 7; i >= 0; i--) {
+        std::cout << i + 1 << " ";
+        for (int j = 0; j < 8; j++) {
+            Piece* piece = this->board[i][j];
+            if (piece != nullptr) {
+                std::cout << piece->ToString() << " ";
+            }
+            else {
+                std::cout << "[ ]" << " ";
+            }
+        }
+        std::cout << endl;
+    }
+    std::cout << "  ";
+    for (char ch = 'A'; ch <= 'H'; ++ch) {
+        std::cout << " " << ch << ' ' << " ";
+    }
+    std::cout << endl;
+}
+
+// Print Board with Highlighted Piece
+void Board::HighlightPrintBoard(int file, int rank) {
+    std::cout << "Board:" << endl;
+    for (int i = 7; i >= 0; i--) {
+        std::cout << i + 1 << " ";
+        for (int j = 0; j < 8; j++) {
+            Piece* piece = this->board[i][j];
+            if (piece != nullptr) {
+                if (i == file && j == rank) {
+                    std::cout << "\033[0m" << piece->HighlightToString() << "\033[0m ";
+                }
+                else {
+                    std::cout << "\033[0m" << piece->ToString() << "\033[0m ";
+                }
+            }
+            else {
+                std::cout << "[ ]" << " ";
+            }
+        }
+        std::cout << endl;
+    }
+    std::cout << "  ";
+    for (char ch = 'A'; ch <= 'H'; ++ch) {
+        std::cout << " " << ch << ' ' << " ";
+    }
+    std::cout << endl;
+}
+
 // Clone Function
 Board* Board::clone() const{
     Board* clonedBoard = new Board();
@@ -292,15 +320,20 @@ Board* Board::clone() const{
     clonedBoard->SetKingPositions(this->whiteKingPosition, this->blackKingPosition);
 
     // Clone and Copy Pieces Onto Clone Board
+    vector<vector<Piece*>> cloneBoard(8);
+    for (int i = 0; i < 8; i++) {
+        cloneBoard[i] = vector<Piece*>(8, nullptr);
+    }
     for (int file = 0; file < 8; ++file) {
         for (int rank = 0; rank < 8; ++rank) {
             if (this->board[file][rank] != nullptr) {
                 // Clone the piece and add it to the cloned board
                 Piece* clonedPiece = this->board[file][rank]->clone();
-                clonedBoard->GetBoard()[file][rank] = clonedPiece;
+                cloneBoard[file][rank] = clonedPiece;
             }
         }
     }
+    clonedBoard->SetBoard(cloneBoard);
 
     // Set the previous board of the cloned board
     if (this->previousBoard != nullptr) {
@@ -308,3 +341,4 @@ Board* Board::clone() const{
     }
     return clonedBoard;
 }
+

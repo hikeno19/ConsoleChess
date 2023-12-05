@@ -26,8 +26,8 @@ class Board
 		void SetKingPositions(string whiteKing, string blackKing);
 		string GetKingPosition(bool color) const;
 		vector<string> GetKingPossibleMoves(bool color);
-		bool CheckCheckmate( bool currentSide);
-		bool CheckCheck( bool currentSide);
+		bool CheckCheckmate( Board* boardState, bool currentSide);
+		bool CheckCheck( Board* boardState, bool currentSide);
 		bool MakeMove(vector<int> move);
 		vector<string> GetEnemyPossibleMoves(Board* b, bool currentSide);
 
@@ -41,9 +41,7 @@ class Board
 
 		bool inRangeCoordinates(int x, int y);
 
-		bool TestPawnMove(Board* boardState, int sfile, int srank, int efile, int erank, bool currentSide);
-
-		void SetPossibleMovesAllPieces(Board* board);
+		void SetPossibleMovesAllPieces(Board* boardState);
 
 		bool TestMove( Board* boardState, int sfile, int srank, int efile, int erank, bool currentSide);
 
@@ -51,11 +49,17 @@ class Board
 
 		void undoMove();
 
+		void PrintBoard();
+
+		void HighlightPrintBoard(int file, int rank);
+
 		Board* clone() const;
 
-	private:
-		Board* previousBoard;
 		vector<vector<Piece*>> board;
+
+		Board* previousBoard;
+
+	private:
 		vector<string> enemyPossibleMoves;
 		string blackKingPosition;
 		string whiteKingPosition;

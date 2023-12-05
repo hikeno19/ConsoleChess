@@ -17,16 +17,13 @@ class GameLogic
 		bool CheckValidEndEntry(vector<string> moves, string coord);
 		int LetterToInteger(char ch);
 		string CoordinateIntegerToString(int file, int rank);
-		void PrintBoard();
-		void HighlightPrintBoard(int file, int rank);
 		string GetCurrentPlayer();
 		string GetOppositePlayer();
 
-
-	private:
 		// Board instance 
 		Board* board;
 		Board* testBoard;
+	private:
 
 		//variables
 		bool GameIsOn;

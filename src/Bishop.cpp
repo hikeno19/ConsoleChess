@@ -5,13 +5,11 @@ Bishop::Bishop() {
 	this->SetColor(true);
 	this->SetValue(3);
 	this->SetType(PieceType::B);
-	this->possibleMoves = vector<string>();
 }
 Bishop::Bishop(bool color) {
 	this->SetColor(color);
 	this->SetValue(3);
 	this->SetType(PieceType::B);
-	this->possibleMoves = vector<string>();
 }
 //Destructor
 Bishop::~Bishop() {
@@ -20,6 +18,9 @@ Bishop::~Bishop() {
 
 void Bishop::SetPossibleMoves(Board* board, int file, int rank)
 {
+	this->possibleMoves.clear();
+	//SetDiagonalMoves(board, file, rank);
+	this->PrintPossibleMoves(file, rank);
 }
 
 Bishop* Bishop::clone() const {

@@ -17,8 +17,11 @@ class Knight : public Piece
 		Knight(bool color);
 		//Destructor
 		~Knight();
-		void SetPossibleMoves(Board* boardState, int file, int rank);
+		void SetPossibleMoves(Board* board, int file, int rank);
 		Knight* clone() const override;
+
+	private:
+		vector<pair<int, int>> moves; 
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <utility>
 
 using namespace std;
 
@@ -39,7 +40,18 @@ class Piece
 		virtual string ToString();
 		string HighlightToString();
 		virtual void SetPossibleMoves(Board* board, int file, int rank);
+		void SetPerpendicularMoves(Board* board, int file, int rank);
+		void SetDiagonalMoves(Board* board, int file, int rank);
+
+		void SetMoveIncrements(vector<pair<int, int>> increments);
+
 		virtual vector<string> GetPossibleMoves();
+
+		bool TestMove(Board* board, int file, int rank, int endFile, int endRank) const;
+
+		void AddPossibleMove(Board* board, int file, int rank);
+
+		void PrintPossibleMoves(int file, int rank);
 
 		virtual Piece* clone() const;
 
@@ -49,6 +61,7 @@ class Piece
 		bool color;
 		int value;
 		PieceType type;
+		vector<pair<int, int>> increments;
 };
 
 #endif
